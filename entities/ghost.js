@@ -1,33 +1,26 @@
-export class Entity {
-	constructor({ position, velocity, color = 'yellow' }) {
+export class Ghost {
+	constructor({ position, velocity, color, refresh = 10 }) {
 		this.position = position;
 		this.velocity = velocity;
 		this.newVelocity = velocity;
-		this.radius = 15;
-		this.collision = false;
 		this.color = color;
-	}
-
-	draw(context) {
-		context.beginPath();
-		context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
-		context.fillStyle = this.color;
-		context.fill();
-		context.closePath();
-	}
-
-	update(context) {
-		this.draw(context);
-		this.position.x += this.velocity.x;
-		this.position.y += this.velocity.y;
-	}
-}
-
-export class Ghost extends Entity {
-	constructor({ position, velocity, color = 'yellow', refresh = 10 }) {
-		super({ position: position, velocity: velocity, color: color });
+		this.radius = 15;
 		this.actual = 0;
 		this.refreshTime = refresh;
+	}
+
+	draw(c) {
+		c.beginPath();
+		c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+		c.fillStyle = this.color;
+		c.fill();
+		c.closePath();
+	}
+
+	update(c) {
+		this.draw(c);
+		this.position.x += this.velocity.x;
+		this.position.y += this.velocity.y;
 	}
 
 	getRandomVelocity = () => {
@@ -58,9 +51,3 @@ export class Ghost extends Entity {
 		this.newVelocity = possibleVelocity;
 	};
 }
-
-export const player = new Entity({
-	position: { x: 0, y: 0 },
-	velocity: { x: 0, y: 0 },
-});
-export const ghosts = [];

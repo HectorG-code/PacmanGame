@@ -1,6 +1,8 @@
-import { boundaries, pellets } from './map.js';
+import { generateMap } from './maps/map.js';
 import { canvas, c, scoreScr } from './global.js';
-import { ghosts, player } from './entities.js';
+import { maps } from './maps/mapList.js';
+
+const { boundaries, pellets, player, ghosts } = generateMap(maps[0]);
 
 let score = 0;
 function setScore(value) {
@@ -67,7 +69,7 @@ const animate = () => {
 
 	for (let i = pellets.length - 1; 0 <= i; i--) {
 		const pellet = pellets[i];
-		pellet.draw();
+		pellet.draw(c);
 		if (circleCollideWithCircle({ circle1: pellet, circle2: player })) {
 			pellets.splice(i, 1);
 			setScore(10);
@@ -93,7 +95,7 @@ const animate = () => {
 		}
 	});
 	boundaries.forEach((boundary) => {
-		boundary.draw();
+		boundary.draw(c);
 		if (
 			circleCollideWithRectangle({
 				circle: player,
