@@ -65,9 +65,7 @@ export const generateMap = (map) => {
 								x: DEFAULT_SIZE * (j + 0.5),
 								y: DEFAULT_SIZE * (i + 0.5),
 							},
-							velocity: { x: 0, y: 0 },
 							color: el.slice(1, el.length),
-							refresh: 15,
 						})
 					);
 			});

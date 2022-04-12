@@ -1,44 +1,56 @@
 import { generateMap } from './maps/map.js';
-import { canvas, c, scoreScr } from './global.js';
+import {
+	canvas,
+	c,
+	scoreScr,
+	PATH_UP,
+	PATH_DOWN,
+	PATH_LEFT,
+	PATH_RIGHT,
+	PATHS,
+} from './global.js';
 import { maps } from './maps/mapList.js';
 
 const { boundaries, pellets, player, ghosts } = generateMap(maps[0]);
 
 let score = 0;
-function setScore(value) {
+const setScore = (value) => {
 	score += value;
 	scoreScr.textContent = score;
-}
-
-const keys = {
-	w: {
-		pressed: false,
-	},
-	a: {
-		pressed: false,
-	},
-	s: {
-		pressed: false,
-	},
-	d: {
-		pressed: false,
-	},
 };
 
-function circleCollideWithRectangle({ circle, rectangle }) {
-	return (
-		circle.position.y - circle.radius + circle.velocity.y <=
-			rectangle.position.y + rectangle.height &&
-		circle.position.x + circle.radius + circle.velocity.x >=
-			rectangle.position.x &&
-		circle.position.y + circle.radius + circle.velocity.y >=
-			rectangle.position.y &&
-		circle.position.x - circle.radius + circle.velocity.x <=
-			rectangle.position.x + rectangle.width
-	);
-}
+const circleCollideWithRectangle = ({ circle, direction, rectangle }) => {
+	const padding = rectangle.width / 2 - circle.radius - 1;
 
-function circleCollideWithCircle({ circle1, circle2 }) {
+	let x = 0;
+	let y = 0;
+
+	switch (direction) {
+		case PATH_UP:
+			y = -circle.speed;
+			break;
+		case PATH_DOWN:
+			y = circle.speed;
+			break;
+		case PATH_LEFT:
+			x = -circle.speed;
+			break;
+		case PATH_RIGHT:
+			x = circle.speed;
+			break;
+	}
+
+	return (
+		circle.position.y - circle.radius + y <=
+			rectangle.position.y + rectangle.height + padding &&
+		circle.position.x + circle.radius + x >= rectangle.position.x - padding &&
+		circle.position.y + circle.radius + y >= rectangle.position.y - padding &&
+		circle.position.x - circle.radius + x <=
+			rectangle.position.x + rectangle.width + padding
+	);
+};
+
+const circleCollideWithCircle = ({ circle1, circle2 }) => {
 	return (
 		Math.hypot(
 			circle2.position.x - circle1.position.x,
@@ -46,7 +58,7 @@ function circleCollideWithCircle({ circle1, circle2 }) {
 		) <
 		circle1.radius + circle2.radius
 	);
-}
+};
 
 const achievedEndConditions = () => {
 	let endCondition = false;
@@ -76,67 +88,59 @@ const animate = () => {
 		}
 	}
 
-	if (keys.w.pressed) {
-		player.newVelocity = { x: 0, y: -5 };
-	} else if (keys.a.pressed) {
-		player.newVelocity = { x: -5, y: 0 };
-	} else if (keys.s.pressed) {
-		player.newVelocity = { x: 0, y: 5 };
-	} else if (keys.d.pressed) {
-		player.newVelocity = { x: 5, y: 0 };
-	}
 	player.collision = false;
 	ghosts.forEach((ghost) => {
-		ghost.collision = false;
-		ghost.actual--;
-		if (ghost.actual <= 0) {
-			ghost.actual = ghost.refreshTime;
-			ghost.getRandomVelocity();
-		}
+		ghost.collisions = [];
 	});
 	boundaries.forEach((boundary) => {
 		boundary.draw(c);
+
 		if (
 			circleCollideWithRectangle({
 				circle: player,
+				direction: player.direction,
 				rectangle: boundary,
 			})
 		) {
-			player.velocity = { x: 0, y: 0 };
+			player.direction = '';
 			player.collision = true;
 		} else if (
 			circleCollideWithRectangle({
-				circle: { ...player, velocity: player.newVelocity },
+				circle: player,
+				direction: player.wantedDirection,
 				rectangle: boundary,
 			})
 		) {
 			player.collision = true;
 		}
+
 		ghosts.forEach((ghost) => {
 			if (
 				circleCollideWithRectangle({
 					circle: ghost,
+					direction: ghost.direction,
 					rectangle: boundary,
 				})
 			) {
-				ghost.velocity = { x: 0, y: 0 };
-				ghost.collision = true;
-			} else if (
-				circleCollideWithRectangle({
-					circle: { ...ghost, velocity: ghost.newVelocity },
-					rectangle: boundary,
-				})
-			)
-				ghost.collision = true;
+				ghost.direction = '';
+			}
+			PATHS.forEach((path) => {
+				if (
+					!ghost.collisions.includes(path) &&
+					circleCollideWithRectangle({
+						circle: ghost,
+						direction: path,
+						rectangle: boundary,
+					})
+				) {
+					ghost.collisions.push(path);
+				}
+			});
 		});
 	});
-	if (!player.collision) player.velocity = player.newVelocity;
+	if (!player.collision) player.direction = player.wantedDirection;
 	player.update(c);
-
 	ghosts.forEach((ghost) => {
-		if (!ghost.collision) {
-			ghost.velocity = ghost.newVelocity;
-		}
 		ghost.update(c);
 	});
 };
@@ -144,9 +148,25 @@ const animate = () => {
 animate();
 
 addEventListener('keydown', ({ key }) => {
-	if (keys[key]) {
-		Object.entries(keys).forEach((i) => {
-			keys[i[0]].pressed = i[0] === key;
-		});
+	if (key === 'w') {
+		player.wantedDirection = PATH_UP;
+	} else if (key === 'a') {
+		player.wantedDirection = PATH_LEFT;
+	} else if (key === 's') {
+		player.wantedDirection = PATH_DOWN;
+	} else if (key === 'd') {
+		player.wantedDirection = PATH_RIGHT;
+	}
+});
+
+addEventListener('keyup', ({ key }) => {
+	if (key === 'w' && player.wantedDirection === PATH_UP) {
+		player.wantedDirection = '';
+	} else if (key === 'a' && player.wantedDirection === PATH_LEFT) {
+		player.wantedDirection = '';
+	} else if (key === 's' && player.wantedDirection === PATH_DOWN) {
+		player.wantedDirection = '';
+	} else if (key === 'd' && player.wantedDirection === PATH_RIGHT) {
+		player.wantedDirection = '';
 	}
 });
