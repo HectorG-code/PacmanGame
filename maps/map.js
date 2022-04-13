@@ -20,8 +20,7 @@ const tiles = {
 	'+': './assets/pipeCross.png',
 };
 
-export const generateMap = (map) => {
-	console.log(map);
+export const generateMap = (matrix) => {
 	const player = new Entities.Player({
 		position: { x: 0, y: 0 },
 		velocity: { x: 0, y: 0 },
@@ -30,7 +29,7 @@ export const generateMap = (map) => {
 	const pellets = [];
 	const ghosts = [];
 
-	map.forEach((row, i) => {
+	matrix.map.forEach((row, i) => {
 		row.forEach((elements, j) => {
 			elements.split(',').forEach((el) => {
 				if (tiles[el]) {
@@ -52,25 +51,34 @@ export const generateMap = (map) => {
 							},
 						})
 					);
-				else if (el === 'p') {
-					player.position = {
-						x: DEFAULT_SIZE * (j + 0.5),
-						y: DEFAULT_SIZE * (i + 0.5),
-					};
-					player.velocity = { x: 0, y: 0 };
-				} else if (el.charAt(0) === 'g')
-					ghosts.push(
-						new Entities.Ghost({
+				else if (el === 'x')
+					pellets.push(
+						new Entities.PowerUp({
 							position: {
 								x: DEFAULT_SIZE * (j + 0.5),
 								y: DEFAULT_SIZE * (i + 0.5),
 							},
-							color: el.slice(1, el.length),
 						})
 					);
 			});
 		});
 	});
+	matrix.ghosts.forEach((ghost) => {
+		ghosts.push(
+			new Entities.Ghost({
+				position: {
+					x: DEFAULT_SIZE * (ghost.position.x + 0.5),
+					y: DEFAULT_SIZE * (ghost.position.y + 0.5),
+				},
+				color: ghost.color,
+				speed: ghost.speed,
+			})
+		);
+	});
+	player.position = {
+		x: DEFAULT_SIZE * (matrix.player.x + 0.5),
+		y: DEFAULT_SIZE * (matrix.player.y + 0.5),
+	};
 
 	return { boundaries, pellets, player, ghosts };
 };

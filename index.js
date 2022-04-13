@@ -9,9 +9,10 @@ import {
 	PATH_RIGHT,
 	PATHS,
 } from './global.js';
-import { maps } from './maps/mapList.js';
+import { PowerUp } from './entities/pellet.js';
+import { original } from './maps/maplist.js';
 
-const { boundaries, pellets, player, ghosts } = generateMap(maps[0]);
+const { boundaries, pellets, player, ghosts } = generateMap(original);
 
 let score = 0;
 const setScore = (value) => {
@@ -60,36 +61,40 @@ const circleCollideWithCircle = ({ circle1, circle2 }) => {
 	);
 };
 
-const achievedEndConditions = () => {
-	let endCondition = false;
-
-	ghosts.forEach((ghost) => {
-		if (circleCollideWithCircle({ circle1: ghost, circle2: player }))
-			endCondition = true;
-	});
-
-	if (pellets.length === 0) {
-		endCondition = true;
-	}
-
-	return endCondition;
-};
-
 const animate = () => {
-	if (!achievedEndConditions()) requestAnimationFrame(animate);
+	const animationId = requestAnimationFrame(animate);
 	c.clearRect(0, 0, canvas.width, canvas.height);
+
+	let poweredUp = false;
 
 	for (let i = pellets.length - 1; 0 <= i; i--) {
 		const pellet = pellets[i];
 		pellet.draw(c);
 		if (circleCollideWithCircle({ circle1: pellet, circle2: player })) {
 			pellets.splice(i, 1);
-			setScore(10);
+			if (pellet instanceof PowerUp) {
+				poweredUp = true;
+			}
+			setScore(pellet.points);
 		}
 	}
 
+	if (pellets.length === 0) {
+		cancelAnimationFrame(animationId);
+	}
+
 	player.collision = false;
-	ghosts.forEach((ghost) => {
+	ghosts.forEach((ghost, i) => {
+		if (poweredUp) {
+			ghost.setScared();
+		}
+		if (circleCollideWithCircle({ circle1: ghost, circle2: player })) {
+			if (ghost.scared) {
+				ghosts.splice(i, 1);
+			} else {
+				cancelAnimationFrame(animationId);
+			}
+		}
 		ghost.collisions = [];
 	});
 	boundaries.forEach((boundary) => {

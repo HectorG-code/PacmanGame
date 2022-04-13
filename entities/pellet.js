@@ -1,7 +1,8 @@
 export class Pellet {
-	constructor({ position }) {
+	constructor({ position, points = 10 }) {
 		this.position = position;
 		this.radius = 3;
+		this.points = points;
 	}
 
 	draw(c) {
@@ -10,5 +11,12 @@ export class Pellet {
 		c.fillStyle = 'white';
 		c.fill();
 		c.closePath();
+	}
+}
+
+export class PowerUp extends Pellet {
+	constructor({ position }) {
+		super({ position: position, points: 50 });
+		this.radius = 8;
 	}
 }
