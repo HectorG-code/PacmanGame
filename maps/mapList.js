@@ -44,7 +44,7 @@ export const original = {
 		],
 		[
 			'|',
-			'.',
+			'x',
 			'1',
 			'2',
 			'.',
@@ -60,7 +60,7 @@ export const original = {
 			'.',
 			'1',
 			'2',
-			'.',
+			'x',
 			'|',
 		],
 		[
@@ -338,7 +338,7 @@ export const original = {
 		],
 		[
 			'|',
-			'.',
+			'x',
 			'.',
 			'|',
 			'.',
@@ -354,7 +354,7 @@ export const original = {
 			'.',
 			'|',
 			'.',
-			'.',
+			'x',
 			'|',
 		],
 		[
