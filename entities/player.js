@@ -1,4 +1,4 @@
-import { PATH_UP, PATH_DOWN, PATH_LEFT, PATH_RIGHT } from '../global.js';
+import { PATH_UP, PATH_DOWN, PATH_LEFT, PATH_RIGHT } from '../directions.js';
 
 export class Player {
 	angle = 0;

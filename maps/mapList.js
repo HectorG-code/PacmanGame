@@ -466,8 +466,8 @@ export const original = {
 	ghosts: [
 		{ color: 'red', speed: 5, position: { x: 9, y: 10 } },
 		{ color: 'orange', speed: 4, position: { x: 8, y: 10 } },
-		{ color: 'salmon', speed: 4, position: { x: 9, y: 10 } },
-		{ color: 'teal', speed: 2, position: { x: 10, y: 10 } },
+		{ color: 'pink', speed: 4, position: { x: 9, y: 10 } },
+		{ color: 'cyan', speed: 2, position: { x: 10, y: 10 } },
 	],
 	player: { x: 9, y: 16 },
 };

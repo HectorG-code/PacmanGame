@@ -1,6 +1,15 @@
-import { getNextPosition, PATHS } from '../global.js';
+import {
+	getNextPosition,
+	isReverse,
+	PATHS,
+	PATH_DOWN,
+	PATH_LEFT,
+	PATH_RIGHT,
+	PATH_UP,
+} from '../directions.js';
 
 export class Ghost {
+	scared = false;
 	constructor({ position, color, speed = 2 }) {
 		this.position = position;
 		this.direction = '';
@@ -8,8 +17,7 @@ export class Ghost {
 		this.radius = 15;
 		this.speed = speed;
 		this.collisions = [];
-		this.possiblesPaths = [];
-		this.scared = false;
+		this.availablePaths = [];
 	}
 
 	draw = (c) => {
@@ -85,7 +93,6 @@ export class Ghost {
 	};
 
 	update = (c) => {
-		this.changeDirection();
 		this.draw(c);
 		this.position = getNextPosition({
 			position: this.position,
@@ -94,19 +101,19 @@ export class Ghost {
 		});
 	};
 
-	changeDirection = () => {
-		if (this.collisions.length > this.possiblesPaths.length) {
-			this.possiblesPaths = [...this.collisions];
-		}
-		if (!this.direction) {
-			this.possiblesPaths = PATHS;
-		} else this.possiblesPaths.push(this.direction);
-		const pathWays = this.possiblesPaths.filter(
-			(collision) => !this.collisions.includes(collision)
+	changeDirection = (destination) => {
+		const possiblesPath = PATHS.filter(
+			(path) =>
+				!this.collisions.includes(path) &&
+				!isReverse({ direction: this.direction, path: path })
 		);
-		this.direction = pathWays[Math.floor(Math.random() * pathWays.length)];
-
-		this.possiblesPaths = [...this.collisions];
+		if (
+			this.availablePaths.sort().join(',') !== possiblesPath.sort().join(',')
+		) {
+			this.direction =
+				possiblesPath[Math.floor(Math.random() * possiblesPath.length)];
+			this.availablePaths = possiblesPath;
+		}
 	};
 
 	setScared = () => {

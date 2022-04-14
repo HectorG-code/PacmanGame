@@ -1,15 +1,12 @@
 import { generateMap } from './maps/map.js';
+import { canvas, c, scoreScr, DEFAULT_SIZE } from './global.js';
 import {
-	canvas,
-	c,
-	scoreScr,
 	PATH_UP,
 	PATH_DOWN,
 	PATH_LEFT,
 	PATH_RIGHT,
 	PATHS,
-	DEFAULT_SIZE,
-} from './global.js';
+} from './directions.js';
 import { PowerUp } from './entities/pellet.js';
 import { original } from './maps/maplist.js';
 
@@ -133,15 +130,6 @@ const animate = () => {
 				boundary.position.y > ghost.position.y - DEFAULT_SIZE * 2 &&
 				boundary.position.y < ghost.position.y + DEFAULT_SIZE * 2
 			) {
-				if (
-					circleCollideWithRectangle({
-						circle: ghost,
-						direction: ghost.direction,
-						rectangle: boundary,
-					})
-				) {
-					ghost.direction = '';
-				}
 				PATHS.forEach((path) => {
 					if (
 						!ghost.collisions.includes(path) &&
@@ -160,6 +148,7 @@ const animate = () => {
 	if (!player.collision) player.direction = player.wantedDirection;
 	player.update(c);
 	ghosts.forEach((ghost) => {
+		ghost.changeDirection(player.position);
 		ghost.update(c);
 	});
 };
