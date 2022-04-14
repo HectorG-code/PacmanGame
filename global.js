@@ -28,6 +28,8 @@ export const getNextPosition = ({ position, speed, direction }) => {
 		case PATH_RIGHT:
 			newPosition.x += speed;
 			break;
+		default:
+			break;
 	}
 	return newPosition;
 };

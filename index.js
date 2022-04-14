@@ -8,6 +8,7 @@ import {
 	PATH_LEFT,
 	PATH_RIGHT,
 	PATHS,
+	DEFAULT_SIZE,
 } from './global.js';
 import { PowerUp } from './entities/pellet.js';
 import { original } from './maps/maplist.js';
@@ -99,48 +100,62 @@ const animate = () => {
 	});
 	boundaries.forEach((boundary) => {
 		boundary.draw(c);
-
 		if (
-			circleCollideWithRectangle({
-				circle: player,
-				direction: player.direction,
-				rectangle: boundary,
-			})
+			boundary.position.x > player.position.x - DEFAULT_SIZE * 2 &&
+			boundary.position.x < player.position.x + DEFAULT_SIZE * 2 &&
+			boundary.position.y > player.position.y - DEFAULT_SIZE * 2 &&
+			boundary.position.y < player.position.y + DEFAULT_SIZE * 2
 		) {
-			player.direction = '';
-			player.collision = true;
-		} else if (
-			circleCollideWithRectangle({
-				circle: player,
-				direction: player.wantedDirection,
-				rectangle: boundary,
-			})
-		) {
-			player.collision = true;
+			if (
+				circleCollideWithRectangle({
+					circle: player,
+					direction: player.direction,
+					rectangle: boundary,
+				})
+			) {
+				player.direction = '';
+				player.collision = true;
+			} else if (
+				circleCollideWithRectangle({
+					circle: player,
+					direction: player.wantedDirection,
+					rectangle: boundary,
+				})
+			) {
+				player.collision = true;
+			}
 		}
 
 		ghosts.forEach((ghost) => {
 			if (
-				circleCollideWithRectangle({
-					circle: ghost,
-					direction: ghost.direction,
-					rectangle: boundary,
-				})
+				boundary.position.x > ghost.position.x - DEFAULT_SIZE * 2 &&
+				boundary.position.x < ghost.position.x + DEFAULT_SIZE * 2 &&
+				boundary.position.y > ghost.position.y - DEFAULT_SIZE * 2 &&
+				boundary.position.y < ghost.position.y + DEFAULT_SIZE * 2
 			) {
-				ghost.direction = '';
-			}
-			PATHS.forEach((path) => {
+				console.log(ghost.position, DEFAULT_SIZE, boundary.position);
 				if (
-					!ghost.collisions.includes(path) &&
 					circleCollideWithRectangle({
 						circle: ghost,
-						direction: path,
+						direction: ghost.direction,
 						rectangle: boundary,
 					})
 				) {
-					ghost.collisions.push(path);
+					ghost.direction = '';
 				}
-			});
+				PATHS.forEach((path) => {
+					if (
+						!ghost.collisions.includes(path) &&
+						circleCollideWithRectangle({
+							circle: ghost,
+							direction: path,
+							rectangle: boundary,
+						})
+					) {
+						ghost.collisions.push(path);
+					}
+				});
+			}
 		});
 	});
 	if (!player.collision) player.direction = player.wantedDirection;

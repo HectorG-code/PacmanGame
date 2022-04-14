@@ -84,10 +84,8 @@ export class Ghost {
 		}
 	};
 
-	drawEye = () => {};
-
 	update = (c) => {
-		this.newPath();
+		this.changeDirection();
 		this.draw(c);
 		this.position = getNextPosition({
 			position: this.position,
@@ -96,7 +94,7 @@ export class Ghost {
 		});
 	};
 
-	newPath = () => {
+	changeDirection = () => {
 		if (this.collisions.length > this.prevCollisions.length) {
 			this.prevCollisions = [...this.collisions];
 		}
