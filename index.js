@@ -133,7 +133,6 @@ const animate = () => {
 				boundary.position.y > ghost.position.y - DEFAULT_SIZE * 2 &&
 				boundary.position.y < ghost.position.y + DEFAULT_SIZE * 2
 			) {
-				console.log(ghost.position, DEFAULT_SIZE, boundary.position);
 				if (
 					circleCollideWithRectangle({
 						circle: ghost,

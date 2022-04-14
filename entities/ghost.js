@@ -8,7 +8,7 @@ export class Ghost {
 		this.radius = 15;
 		this.speed = speed;
 		this.collisions = [];
-		this.prevCollisions = [];
+		this.possiblesPaths = [];
 		this.scared = false;
 	}
 
@@ -95,18 +95,18 @@ export class Ghost {
 	};
 
 	changeDirection = () => {
-		if (this.collisions.length > this.prevCollisions.length) {
-			this.prevCollisions = [...this.collisions];
+		if (this.collisions.length > this.possiblesPaths.length) {
+			this.possiblesPaths = [...this.collisions];
 		}
 		if (!this.direction) {
-			this.prevCollisions = PATHS;
-		} else this.prevCollisions.push(this.direction);
-		const pathWays = this.prevCollisions.filter(
+			this.possiblesPaths = PATHS;
+		} else this.possiblesPaths.push(this.direction);
+		const pathWays = this.possiblesPaths.filter(
 			(collision) => !this.collisions.includes(collision)
 		);
 		this.direction = pathWays[Math.floor(Math.random() * pathWays.length)];
 
-		this.prevCollisions = [...this.collisions];
+		this.possiblesPaths = [...this.collisions];
 	};
 
 	setScared = () => {
