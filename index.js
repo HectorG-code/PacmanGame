@@ -87,13 +87,13 @@ const animate = () => {
 			ghost.setScared();
 		}
 		if (circleCollideWithCircle({ circle1: ghost, circle2: player })) {
-			if (ghost.scared) {
-				ghosts.splice(i, 1);
-			} else {
+			if (ghost.isAlive()) {
 				cancelAnimationFrame(animationId);
+			} else {
+				ghost.setDead();
 			}
 		}
-		ghost.collisions = [];
+		ghost.resetCollisions();
 	});
 	boundaries.forEach((boundary) => {
 		boundary.draw(c);
@@ -139,7 +139,7 @@ const animate = () => {
 							rectangle: boundary,
 						})
 					) {
-						ghost.collisions.push(path);
+						ghost.addCollision(path);
 					}
 				});
 			}
