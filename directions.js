@@ -5,7 +5,7 @@ export const PATH_RIGHT = 'RIGHT';
 export const PATHS = [PATH_UP, PATH_DOWN, PATH_LEFT, PATH_RIGHT];
 
 export const getNextPosition = ({ position, speed, direction }) => {
-	const newPosition = position;
+	const newPosition = { ...position };
 	switch (direction) {
 		case PATH_UP:
 			newPosition.y -= speed;
@@ -27,10 +27,9 @@ export const getNextPosition = ({ position, speed, direction }) => {
 
 export const isReverse = ({ direction, path }) => {
 	return (
-		direction &&
-		((direction === PATH_UP && path === PATH_DOWN) ||
-			(direction === PATH_DOWN && path === PATH_UP) ||
-			(direction === PATH_RIGHT && path === PATH_LEFT) ||
-			(direction === PATH_LEFT && path === PATH_RIGHT))
+		(direction === PATH_UP && path === PATH_DOWN) ||
+		(direction === PATH_DOWN && path === PATH_UP) ||
+		(direction === PATH_RIGHT && path === PATH_LEFT) ||
+		(direction === PATH_LEFT && path === PATH_RIGHT)
 	);
 };

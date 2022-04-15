@@ -1,4 +1,4 @@
-import { DEFAULT_SIZE } from '../global.js';
+import { calcPosition, DEFAULT_SIZE } from '../global.js';
 import Entities from '../entities/common.js';
 
 const tiles = {
@@ -37,7 +37,7 @@ export const generateMap = (matrix) => {
 					image.src = tiles[el];
 					boundaries.push(
 						new Entities.Boundary({
-							position: { x: j * DEFAULT_SIZE, y: i * DEFAULT_SIZE },
+							position: calcPosition({ x: j, y: i }),
 							image: image,
 							size: { width: DEFAULT_SIZE, height: DEFAULT_SIZE },
 						})
@@ -45,19 +45,13 @@ export const generateMap = (matrix) => {
 				} else if (el === '.')
 					pellets.push(
 						new Entities.Pellet({
-							position: {
-								x: DEFAULT_SIZE * (j + 0.5),
-								y: DEFAULT_SIZE * (i + 0.5),
-							},
+							position: calcPosition({ x: j, y: i }, 0.5),
 						})
 					);
 				else if (el === 'x')
 					pellets.push(
 						new Entities.PowerUp({
-							position: {
-								x: DEFAULT_SIZE * (j + 0.5),
-								y: DEFAULT_SIZE * (i + 0.5),
-							},
+							position: calcPosition({ x: j, y: i }, 0.5),
 						})
 					);
 			});
@@ -66,19 +60,16 @@ export const generateMap = (matrix) => {
 	matrix.ghosts.forEach((ghost) => {
 		ghosts.push(
 			new Entities.Ghost({
-				position: {
-					x: DEFAULT_SIZE * (ghost.position.x + 0.5),
-					y: DEFAULT_SIZE * (ghost.position.y + 0.5),
-				},
+				position: calcPosition(ghost.position, 0.5),
 				color: ghost.color,
 				speed: ghost.speed,
+				exitPosition: calcPosition(ghost.exit, 0.5),
+				scatterPosition: calcPosition(ghost.scatter, 0.5),
+				respawnPosition: calcPosition(ghost.grave, 0.5),
 			})
 		);
 	});
-	player.position = {
-		x: DEFAULT_SIZE * (matrix.player.x + 0.5),
-		y: DEFAULT_SIZE * (matrix.player.y + 0.5),
-	};
+	player.position = calcPosition(matrix.player, 0.5);
 
 	return { boundaries, pellets, player, ghosts };
 };

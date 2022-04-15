@@ -1,11 +1,19 @@
 import { generateMap } from './maps/map.js';
-import { canvas, c, scoreScr, DEFAULT_SIZE } from './global.js';
+import {
+	canvas,
+	c,
+	scoreScr,
+	DEFAULT_SIZE,
+	circleCollideWithRectangle,
+	circleCollideWithCircle,
+} from './global.js';
 import {
 	PATH_UP,
 	PATH_DOWN,
 	PATH_LEFT,
 	PATH_RIGHT,
 	PATHS,
+	getNextPosition,
 } from './directions.js';
 import { PowerUp } from './entities/pellet.js';
 import { original } from './maps/maplist.js';
@@ -16,47 +24,6 @@ let score = 0;
 const setScore = (value) => {
 	score += value;
 	scoreScr.textContent = score;
-};
-
-const circleCollideWithRectangle = ({ circle, direction, rectangle }) => {
-	const padding = rectangle.width / 2 - circle.radius - 1;
-
-	let x = 0;
-	let y = 0;
-
-	switch (direction) {
-		case PATH_UP:
-			y = -circle.speed;
-			break;
-		case PATH_DOWN:
-			y = circle.speed;
-			break;
-		case PATH_LEFT:
-			x = -circle.speed;
-			break;
-		case PATH_RIGHT:
-			x = circle.speed;
-			break;
-	}
-
-	return (
-		circle.position.y - circle.radius + y <=
-			rectangle.position.y + rectangle.height + padding &&
-		circle.position.x + circle.radius + x >= rectangle.position.x - padding &&
-		circle.position.y + circle.radius + y >= rectangle.position.y - padding &&
-		circle.position.x - circle.radius + x <=
-			rectangle.position.x + rectangle.width + padding
-	);
-};
-
-const circleCollideWithCircle = ({ circle1, circle2 }) => {
-	return (
-		Math.hypot(
-			circle2.position.x - circle1.position.x,
-			circle2.position.y - circle1.position.y
-		) <
-		circle1.radius + circle2.radius
-	);
 };
 
 const animate = () => {
@@ -90,7 +57,7 @@ const animate = () => {
 			if (ghost.isAlive()) {
 				cancelAnimationFrame(animationId);
 			} else {
-				ghost.setDead();
+				ghost.collisionPlayer();
 			}
 		}
 		ghost.resetCollisions();
@@ -105,8 +72,12 @@ const animate = () => {
 		) {
 			if (
 				circleCollideWithRectangle({
-					circle: player,
-					direction: player.direction,
+					position: getNextPosition({
+						position: player.position,
+						speed: player.speed,
+						direction: player.direction,
+					}),
+					radius: player.radius,
 					rectangle: boundary,
 				})
 			) {
@@ -114,8 +85,12 @@ const animate = () => {
 				player.collision = true;
 			} else if (
 				circleCollideWithRectangle({
-					circle: player,
-					direction: player.wantedDirection,
+					position: getNextPosition({
+						position: player.position,
+						speed: player.speed,
+						direction: player.wantedDirection,
+					}),
+					radius: player.radius,
 					rectangle: boundary,
 				})
 			) {
@@ -131,15 +106,22 @@ const animate = () => {
 				boundary.position.y < ghost.position.y + DEFAULT_SIZE * 2
 			) {
 				PATHS.forEach((path) => {
-					if (
-						!ghost.collisions.includes(path) &&
-						circleCollideWithRectangle({
-							circle: ghost,
+					if (!ghost.collisions.includes(path)) {
+						const position = getNextPosition({
+							position: ghost.position,
+							speed: ghost.speed,
 							direction: path,
-							rectangle: boundary,
-						})
-					) {
-						ghost.addCollision(path);
+						});
+
+						if (
+							circleCollideWithRectangle({
+								position: position,
+								radius: ghost.radius,
+								rectangle: boundary,
+							})
+						) {
+							ghost.addCollision(path);
+						}
 					}
 				});
 			}
@@ -148,7 +130,6 @@ const animate = () => {
 	if (!player.collision) player.direction = player.wantedDirection;
 	player.update(c);
 	ghosts.forEach((ghost) => {
-		ghost.changeDirection(player.position);
 		ghost.update(c);
 	});
 };

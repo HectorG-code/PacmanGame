@@ -1,0 +1,21 @@
+Ghost:
+- Path and destination routes so ghost can return initial camp spawn to revive
+- Revive ghost only on initial camp respawn
+- AI for every Ghost:
+- - Subclass for different behaviors
+- - Red: Follow player
+- - Pink: Control player position every few secs and trace a route to there
+- - Cyan: Select a position randomly and patrol between actual position and selected position, change every few secs
+- - Orange: Stay random
+
+Board:
+- Lateral tunnels (ghost can not enter)
+- Ghost respawn camp top block:
+- - white line
+- - ghost alived or scared can pass through only from botton to top, avoid other way
+- - dead ghost can pass through eitherway.
+- - player can not pass through
+- Fruits price
+- - save every free position of map (not block, not ghost respawn, not tunnel)
+- - every few secs select one randomly and spawn a price
+

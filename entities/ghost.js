@@ -1,21 +1,36 @@
 import { getNextPosition, isReverse, PATHS } from '../directions.js';
 
+const STATE_STARTED = 'started';
 const STATE_SCARED = 'scared';
+const MODE_SCATTER = 'scatter';
+const MODE_CHASE = 'chase';
 const STATE_ALIVE = 'alive';
 const STATE_DEAD = 'dead';
 
 export class Ghost {
-	state = STATE_ALIVE;
+	state = STATE_STARTED;
 	state_timer = null;
 	direction = '';
 	collisions = [];
 	availablePaths = [];
+	destination = null;
 
-	constructor({ position, color, speed = 2 }) {
+	constructor({
+		position,
+		color,
+		speed = 2,
+		exitPosition = { x: 0, y: 0 },
+		scatterPosition = { x: 0, y: 0 },
+		respawnPosition = { x: 0, y: 0 },
+	}) {
 		this.position = position;
 		this.color = color;
 		this.radius = 15;
 		this.speed = speed;
+		this.destination = { ...exitPosition };
+		this.exitPosition = { ...exitPosition };
+		this.scatterPosition = { ...scatterPosition };
+		this.respawnPosition = { ...respawnPosition };
 	}
 
 	addCollision = (collision) => {
@@ -107,6 +122,7 @@ export class Ghost {
 	draw = (c) => {
 		switch (this.state) {
 			case STATE_ALIVE:
+			case STATE_STARTED:
 				this.drawBody(c);
 				this.drawEyes(c);
 				this.drawEyeballs(c);
@@ -125,6 +141,10 @@ export class Ghost {
 
 	update = (c) => {
 		this.draw(c);
+		if (this.isDestinationReached()) {
+			this.reachDestination();
+		}
+		this.changeDirection();
 		this.position = getNextPosition({
 			position: this.position,
 			speed: this.speed,
@@ -132,18 +152,24 @@ export class Ghost {
 		});
 	};
 
-	changeDirection = (destination) => {
-		const possiblesPath = PATHS.filter(
-			(path) =>
-				!this.collisions.includes(path) &&
-				!isReverse({ direction: this.direction, path: path })
+	setDestination = (destination) => {
+		this.destination = { ...destination };
+	};
+
+	isDestinationReached = () => {
+		return (
+			this.position.x === this.destination.x &&
+			this.position.y === this.destination.y
 		);
-		if (
-			this.availablePaths.sort().join(',') !== possiblesPath.sort().join(',')
-		) {
-			this.direction =
-				possiblesPath[Math.floor(Math.random() * possiblesPath.length)];
-			this.availablePaths = possiblesPath;
+	};
+
+	reachDestination = () => {
+		if (this.state === STATE_DEAD) {
+			this.state = STATE_STARTED;
+			this.destination = { ...this.exitPosition };
+		} else if (this.state === STATE_STARTED) {
+			this.state = STATE_ALIVE;
+			this.destination = { ...this.scatterPosition };
 		}
 	};
 
@@ -159,9 +185,52 @@ export class Ghost {
 	setDead = () => {
 		clearTimeout(this.state_timer);
 		this.state = STATE_DEAD;
-		this.state_timer = setTimeout(() => {
-			this.state = STATE_ALIVE;
-		}, 5000);
+		this.setDestination(this.respawnPosition);
+	};
+
+	changeDirection = () => {
+		const possiblesPath = PATHS.filter(
+			(path) =>
+				!this.collisions.includes(path) &&
+				!isReverse({ direction: this.direction, path: path })
+		);
+		if (
+			this.availablePaths.sort().join(',') !== possiblesPath.sort().join(',')
+		) {
+			let newPath = null;
+			possiblesPath.forEach((path) => {
+				const nextPosition = getNextPosition({
+					position: this.position,
+					speed: this.speed,
+					direction: path,
+				});
+				const distance = Math.sqrt(
+					Math.pow(Math.abs(nextPosition.x - this.destination.x), 2) +
+						Math.pow(Math.abs(nextPosition.y - this.destination.y), 2)
+				);
+				if (!newPath) {
+					newPath = { direction: path, distance: distance };
+				}
+				if (this.state === STATE_SCARED) {
+					if (distance > newPath.distance) {
+						newPath.direction = path;
+						newPath.distance = distance;
+					}
+				} else {
+					if (distance < newPath.distance) {
+						newPath.direction = path;
+						newPath.distance = distance;
+					}
+				}
+			});
+			if (newPath) {
+				this.direction = newPath.direction;
+			} else {
+				this.direction = '';
+			}
+
+			this.availablePaths = possiblesPath;
+		}
 	};
 
 	isAlive = () => {
