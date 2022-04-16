@@ -4,6 +4,8 @@ export const PATH_LEFT = 'LEFT';
 export const PATH_RIGHT = 'RIGHT';
 export const PATHS = [PATH_UP, PATH_DOWN, PATH_LEFT, PATH_RIGHT];
 
+let playerPosition = '';
+
 export const getNextPosition = ({ position, speed, direction }) => {
 	const newPosition = { ...position };
 	switch (direction) {
@@ -32,4 +34,12 @@ export const isReverse = ({ direction, path }) => {
 		(direction === PATH_RIGHT && path === PATH_LEFT) ||
 		(direction === PATH_LEFT && path === PATH_RIGHT)
 	);
+};
+
+export const setPlayerPosition = (position) => {
+	playerPosition = { ...position };
+};
+
+export const getLastPlayerPosition = (position) => {
+	return playerPosition;
 };

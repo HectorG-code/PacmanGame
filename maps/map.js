@@ -59,10 +59,8 @@ export const generateMap = (matrix) => {
 	});
 	matrix.ghosts.forEach((ghost) => {
 		ghosts.push(
-			new Entities.Ghost({
+			new Entities.DynamicGhost(ghost.class, {
 				position: calcPosition(ghost.position, 0.5),
-				color: ghost.color,
-				speed: ghost.speed,
 				exitPosition: calcPosition(ghost.exit, 0.5),
 				scatterPosition: calcPosition(ghost.scatter, 0.5),
 				respawnPosition: calcPosition(ghost.grave, 0.5),

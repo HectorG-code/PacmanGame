@@ -14,6 +14,7 @@ import {
 	PATH_RIGHT,
 	PATHS,
 	getNextPosition,
+	setPlayerPosition,
 } from './directions.js';
 import { PowerUp } from './entities/pellet.js';
 import { original } from './maps/maplist.js';
@@ -49,7 +50,7 @@ const animate = () => {
 	}
 
 	player.collision = false;
-	ghosts.forEach((ghost, i) => {
+	ghosts.forEach((ghost) => {
 		if (poweredUp) {
 			ghost.setScared();
 		}
@@ -129,6 +130,7 @@ const animate = () => {
 	});
 	if (!player.collision) player.direction = player.wantedDirection;
 	player.update(c);
+	setPlayerPosition(player.position);
 	ghosts.forEach((ghost) => {
 		ghost.update(c);
 	});

@@ -1,6 +1,4 @@
 Ghost:
-- Path and destination routes so ghost can return initial camp spawn to revive
-- Revive ghost only on initial camp respawn
 - AI for every Ghost:
 - - Subclass for different behaviors
 - - Red: Follow player

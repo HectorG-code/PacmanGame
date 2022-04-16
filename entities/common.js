@@ -1,6 +1,6 @@
-import { Ghost } from './ghost.js';
+import { Ghost, DynamicGhost } from './ghost.js';
 import { Player } from './player.js';
 import { Boundary } from './boundary.js';
 import { Pellet, PowerUp } from './pellet.js';
 
-export default { Ghost, Player, Boundary, Pellet, PowerUp };
+export default { Ghost, DynamicGhost, Player, Boundary, Pellet, PowerUp };

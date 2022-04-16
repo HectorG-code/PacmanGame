@@ -1,4 +1,9 @@
-import { getNextPosition, isReverse, PATHS } from '../directions.js';
+import {
+	getLastPlayerPosition,
+	getNextPosition,
+	isReverse,
+	PATHS,
+} from '../directions.js';
 
 const STATE_STARTED = 'started';
 const STATE_SCARED = 'scared';
@@ -9,7 +14,11 @@ const STATE_DEAD = 'dead';
 
 export class Ghost {
 	state = STATE_STARTED;
-	state_timer = null;
+	mode = MODE_SCATTER;
+	color = 'white';
+	speed = 5;
+	radius = 15;
+	scaredTimer = null;
 	direction = '';
 	collisions = [];
 	availablePaths = [];
@@ -17,20 +26,29 @@ export class Ghost {
 
 	constructor({
 		position,
-		color,
-		speed = 2,
 		exitPosition = { x: 0, y: 0 },
 		scatterPosition = { x: 0, y: 0 },
 		respawnPosition = { x: 0, y: 0 },
 	}) {
 		this.position = position;
-		this.color = color;
-		this.radius = 15;
-		this.speed = speed;
 		this.destination = { ...exitPosition };
 		this.exitPosition = { ...exitPosition };
 		this.scatterPosition = { ...scatterPosition };
 		this.respawnPosition = { ...respawnPosition };
+		this.modeCycle(3000 + Math.floor(Math.random() * 5000));
+	}
+
+	modeCycle(time) {
+		setTimeout(() => {
+			if (this.mode === MODE_SCATTER) {
+				this.mode = MODE_CHASE;
+				this.modeCycle(10000 + Math.floor(Math.random() * 5000));
+			} else {
+				this.mode = MODE_SCATTER;
+				this.setDestination(this.scatterPosition);
+				this.modeCycle(3000 + Math.floor(Math.random() * 5000));
+			}
+		}, time);
 	}
 
 	addCollision = (collision) => {
@@ -152,43 +170,52 @@ export class Ghost {
 		});
 	};
 
-	setDestination = (destination) => {
+	setDestination(destination) {
 		this.destination = { ...destination };
-	};
+	}
 
-	isDestinationReached = () => {
+	isDestinationReached() {
 		return (
 			this.position.x === this.destination.x &&
 			this.position.y === this.destination.y
 		);
-	};
+	}
 
-	reachDestination = () => {
-		if (this.state === STATE_DEAD) {
-			this.state = STATE_STARTED;
-			this.destination = { ...this.exitPosition };
-		} else if (this.state === STATE_STARTED) {
-			this.state = STATE_ALIVE;
-			this.destination = { ...this.scatterPosition };
+	reachDestination() {
+		switch (this.state) {
+			case STATE_STARTED:
+				this.state = STATE_ALIVE;
+				this.setDestination(this.scatterPosition);
+				break;
+			case STATE_ALIVE:
+				break;
+			case STATE_DEAD:
+				this.state = STATE_STARTED;
+				this.setDestination(this.exitPosition);
+				break;
 		}
-	};
+	}
 
-	setScared = () => {
+	setScared() {
 		if (this.state === STATE_DEAD) return;
-		clearTimeout(this.state_timer);
+		clearTimeout(this.scaredTimer);
 		this.state = STATE_SCARED;
-		this.state_timer = setTimeout(() => {
-			this.state = STATE_ALIVE;
+		this.scaredTimer = setTimeout(() => {
+			this.endScared(STATE_ALIVE);
 		}, 5000);
-	};
+	}
+
+	endScared(state) {
+		this.state = state;
+		clearTimeout(this.scaredTimer);
+	}
 
 	setDead = () => {
-		clearTimeout(this.state_timer);
-		this.state = STATE_DEAD;
+		this.endScared(STATE_DEAD);
 		this.setDestination(this.respawnPosition);
 	};
 
-	changeDirection = () => {
+	changeDirection() {
 		const possiblesPath = PATHS.filter(
 			(path) =>
 				!this.collisions.includes(path) &&
@@ -204,6 +231,9 @@ export class Ghost {
 					speed: this.speed,
 					direction: path,
 				});
+				if (this.state === STATE_SCARED) {
+					this.setDestination(getLastPlayerPosition());
+				}
 				const distance = Math.sqrt(
 					Math.pow(Math.abs(nextPosition.x - this.destination.x), 2) +
 						Math.pow(Math.abs(nextPosition.y - this.destination.y), 2)
@@ -231,7 +261,7 @@ export class Ghost {
 
 			this.availablePaths = possiblesPath;
 		}
-	};
+	}
 
 	isAlive = () => {
 		if (this.state === STATE_ALIVE) return true;
@@ -242,4 +272,111 @@ export class Ghost {
 		if (this.state === STATE_SCARED) this.setDead();
 		return;
 	};
+}
+
+class PinkGhost extends Ghost {
+	constructor({
+		position,
+		exitPosition = { x: 0, y: 0 },
+		scatterPosition = { x: 0, y: 0 },
+		respawnPosition = { x: 0, y: 0 },
+	}) {
+		super({
+			position: position,
+			exitPosition: exitPosition,
+			scatterPosition: scatterPosition,
+			respawnPosition: respawnPosition,
+		});
+		this.color = 'pink';
+	}
+}
+
+class RedGhost extends Ghost {
+	constructor({
+		position,
+		exitPosition = { x: 0, y: 0 },
+		scatterPosition = { x: 0, y: 0 },
+		respawnPosition = { x: 0, y: 0 },
+	}) {
+		super({
+			position: position,
+			exitPosition: exitPosition,
+			scatterPosition: scatterPosition,
+			respawnPosition: respawnPosition,
+		});
+		this.color = 'red';
+	}
+
+	changeDirection() {
+		if (this.state === STATE_ALIVE && this.mode === MODE_CHASE) {
+			this.setDestination(getLastPlayerPosition());
+		}
+		super.changeDirection();
+	}
+}
+
+class OrangeGhost extends Ghost {
+	constructor({
+		position,
+		exitPosition = { x: 0, y: 0 },
+		scatterPosition = { x: 0, y: 0 },
+		respawnPosition = { x: 0, y: 0 },
+	}) {
+		super({
+			position: position,
+			exitPosition: exitPosition,
+			scatterPosition: scatterPosition,
+			respawnPosition: respawnPosition,
+		});
+		this.color = 'orange';
+	}
+
+	changeDirection() {
+		if (this.state === STATE_ALIVE && this.mode === MODE_CHASE) {
+			const possiblesPath = PATHS.filter(
+				(path) =>
+					!this.collisions.includes(path) &&
+					!isReverse({ direction: this.direction, path: path })
+			);
+			if (
+				this.availablePaths.sort().join(',') !== possiblesPath.sort().join(',')
+			) {
+				this.direction =
+					possiblesPath[Math.floor(Math.random() * possiblesPath.length)];
+				this.availablePaths = possiblesPath;
+			}
+		} else {
+			super.changeDirection();
+		}
+	}
+}
+
+class CyanGhost extends Ghost {
+	constructor({
+		position,
+		exitPosition = { x: 0, y: 0 },
+		scatterPosition = { x: 0, y: 0 },
+		respawnPosition = { x: 0, y: 0 },
+	}) {
+		super({
+			position: position,
+			exitPosition: exitPosition,
+			scatterPosition: scatterPosition,
+			respawnPosition: respawnPosition,
+		});
+		this.color = 'cyan';
+	}
+}
+
+const ghostClasses = {
+	RedGhost,
+	PinkGhost,
+	CyanGhost,
+	OrangeGhost,
+};
+
+export class DynamicGhost {
+	constructor(ghostClass, opts) {
+		return new ghostClasses[ghostClass](opts);
+	}
 }
